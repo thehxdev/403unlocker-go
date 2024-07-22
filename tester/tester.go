@@ -1,6 +1,7 @@
 package tester
 
 import (
+	"bufio"
 	"context"
 	"encoding/json"
 	"log"
@@ -10,11 +11,20 @@ import (
 	"sync"
 )
 
+const (
+	BUFF_SIZE = (32 * 1024)
+)
+
 type Tester struct {
 	Wg      *sync.WaitGroup
 	Mu      *sync.Mutex
 	LimitCh chan bool
 	Config  config
+}
+
+type ipInfo struct {
+	Ip    string
+	Bytes int
 }
 
 func Init(confPath string) (*Tester, error) {
@@ -58,8 +68,8 @@ func createClient(ip string) *http.Client {
 	}
 }
 
-func (t *Tester) ipIsOk(ip string) bool {
-	c := createClient(ip)
+func (t *Tester) ipIsOk(info *ipInfo) bool {
+	c := createClient(info.Ip)
 
 	req, err := http.NewRequestWithContext(context.Background(), "GET", t.Config.Url, nil)
 	if err != nil {
@@ -72,26 +82,39 @@ func (t *Tester) ipIsOk(ip string) bool {
 	}
 	defer resp.Body.Close()
 
-	return resp.StatusCode == http.StatusOK
+	buff := make([]byte, BUFF_SIZE)
+	reader := bufio.NewReaderSize(resp.Body, BUFF_SIZE)
+
+	if resp.StatusCode == http.StatusOK {
+		for {
+			read, err := reader.Read(buff)
+			info.Bytes += read
+			if err != nil {
+				break
+			}
+		}
+		return true
+	}
+
+	return false
 }
 
-func (t *Tester) TestIPs() []string {
-	okIPs := make([]string, 0)
+func (t *Tester) TestIPs() map[string]int {
+	okIPs := make(map[string]int)
 
 	for _, ip := range t.Config.Ips {
 		t.Wg.Add(1)
 		go func(ip string) {
 			defer t.Wg.Done()
-			t.LimitCh <- t.ipIsOk(ip)
+			info := ipInfo{ip, 0}
+			t.LimitCh <- t.ipIsOk(&info)
 
 			if <-t.LimitCh {
 				log.Printf("[OK] %s\n", ip)
-				t.Mu.Lock()
-				okIPs = append(okIPs, ip)
-				t.Mu.Unlock()
+				okIPs[ip] = info.Bytes
 			} else {
-                log.Printf("[FAIL] %s\n", ip)
-            }
+				log.Printf("[FAIL] %s\n", ip)
+			}
 		}(ip)
 	}
 	t.Wg.Wait()

@@ -1,10 +1,12 @@
 package main
 
 import (
+	"encoding/json"
 	"flag"
 	"fmt"
 	"log"
 	"os"
+	"time"
 
 	"github.com/thehxdev/403unlocker-go/tester"
 )
@@ -29,6 +31,25 @@ func main() {
 	}
 
 	ips := t.TestIPs()
+	fmt.Printf("\nTested IPs = %+v\n", ips)
 
-	fmt.Printf("\nWorking IPs = %+v\n", ips)
+	writeToFile(ips)
+}
+
+func writeToFile(ips map[string]int) {
+	createdTime := time.Now().Format(time.DateTime)
+	name := "result-" + createdTime + ".json"
+
+	fp, err := os.Create(name)
+	if err != nil {
+		log.Fatal(err)
+	}
+	defer fp.Close()
+
+	err = json.NewEncoder(fp).Encode(&ips)
+	if err != nil {
+		log.Fatal(err)
+	}
+
+	fmt.Printf("Wrote test result to `%s` file\n", name)
 }
