@@ -89,7 +89,9 @@ func (t *Tester) TestIPs() []string {
 				t.Mu.Lock()
 				okIPs = append(okIPs, ip)
 				t.Mu.Unlock()
-			}
+			} else {
+                log.Printf("[FAIL] %s\n", ip)
+            }
 		}(ip)
 	}
 	t.Wg.Wait()
