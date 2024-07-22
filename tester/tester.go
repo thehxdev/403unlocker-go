@@ -28,6 +28,10 @@ type ipInfo struct {
 }
 
 func Init(confPath string) (*Tester, error) {
+    if Limit <= 0 {
+        Limit = DEFAULT_LIMIT
+    }
+
 	t := &Tester{
 		Wg:      &sync.WaitGroup{},
 		Mu:      &sync.Mutex{},
