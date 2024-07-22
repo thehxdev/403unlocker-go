@@ -5,8 +5,8 @@ import (
 )
 
 const (
-	LOOKUP_TIMEOUT  = time.Second * 5
-	REQUEST_TIMEOUT = time.Second * 5
+	LOOKUP_TIMEOUT  = time.Second * 6
+	REQUEST_TIMEOUT = time.Second * 6
 
 	// Process this number of IPs concurrently
 	DEFAULT_LIMIT = 2
