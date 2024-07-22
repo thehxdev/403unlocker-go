@@ -111,7 +111,7 @@ func (t *Tester) TestIPs() map[string]int {
 
 			if <-t.LimitCh {
 				log.Printf("[OK] %s\n", ip)
-				okIPs[ip] = info.Bytes
+				okIPs[ip] = info.Bytes / 1024
 			} else {
 				log.Printf("[FAIL] %s\n", ip)
 			}
