@@ -18,6 +18,7 @@ var versionInfo = "403unlocker-go v" + VERSION + "\nhttps://github.com/thehxdev/
 func main() {
 	cpath := flag.String("c", "config.json", "path to config file")
 	version := flag.Bool("v", false, "show version info")
+	flag.IntVar(&tester.Limit, "l", 2, "number of IPs that will be processed concurrently")
 	flag.Parse()
 
 	if *version {

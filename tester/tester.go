@@ -31,7 +31,7 @@ func Init(confPath string) (*Tester, error) {
 	t := &Tester{
 		Wg:      &sync.WaitGroup{},
 		Mu:      &sync.Mutex{},
-		LimitCh: make(chan bool, LIMIT),
+		LimitCh: make(chan bool, Limit),
 	}
 
 	cdata, err := os.ReadFile(confPath)
@@ -106,15 +106,17 @@ func (t *Tester) TestIPs() map[string]int {
 		t.Wg.Add(1)
 		go func(ip string) {
 			defer t.Wg.Done()
-			info := ipInfo{ip, 0}
-			t.LimitCh <- t.ipIsOk(&info)
+			t.LimitCh <- false
 
-			if <-t.LimitCh {
+			info := ipInfo{ip, 0}
+			if t.ipIsOk(&info) {
 				log.Printf("[OK] %s\n", ip)
 				okIPs[ip] = info.Bytes / 1024
 			} else {
 				log.Printf("[FAIL] %s\n", ip)
 			}
+
+            <-t.LimitCh
 		}(ip)
 	}
 	t.Wg.Wait()

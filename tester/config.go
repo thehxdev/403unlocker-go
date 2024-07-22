@@ -9,10 +9,14 @@ const (
 	REQUEST_TIMEOUT = time.Second * 5
 
 	// Process this number of IPs concurrently
-	LIMIT = 10
+	DEFAULT_LIMIT = 2
 
 	// DNS server port
 	PORT = "53"
+)
+
+var (
+    Limit = DEFAULT_LIMIT
 )
 
 type config struct {
