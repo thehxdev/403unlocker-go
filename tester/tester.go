@@ -9,6 +9,7 @@ import (
 	"net/http"
 	"os"
 	"sync"
+	"time"
 )
 
 const (
@@ -28,9 +29,9 @@ type ipInfo struct {
 }
 
 func Init(confPath string) (*Tester, error) {
-    if Limit <= 0 {
-        Limit = DEFAULT_LIMIT
-    }
+	if Limit <= 0 {
+		Limit = DEFAULT_LIMIT
+	}
 
 	t := &Tester{
 		Wg:      &sync.WaitGroup{},
@@ -38,12 +39,7 @@ func Init(confPath string) (*Tester, error) {
 		LimitCh: make(chan bool, Limit),
 	}
 
-	cdata, err := os.ReadFile(confPath)
-	if err != nil {
-		return nil, err
-	}
-
-	err = json.Unmarshal(cdata, &t.Config)
+	err := t.readConfigFile(confPath)
 	if err != nil {
 		return nil, err
 	}
@@ -51,10 +47,24 @@ func Init(confPath string) (*Tester, error) {
 	return t, nil
 }
 
-func createClient(ip string) *http.Client {
+func (t *Tester) readConfigFile(path string) error {
+	cdata, err := os.ReadFile(path)
+	if err != nil {
+		return err
+	}
+
+	err = json.Unmarshal(cdata, &t.Config)
+	if err != nil {
+		return err
+	}
+
+	return nil
+}
+
+func (t *Tester) createClient(ip string) *http.Client {
 	dialer := &net.Dialer{
 		// Lookup timeout
-		Timeout: LOOKUP_TIMEOUT,
+		Timeout: time.Second * time.Duration(t.Config.LookupTimeout),
 		Resolver: &net.Resolver{
 			PreferGo: true,
 			Dial: func(ctx context.Context, network, address string) (net.Conn, error) {
@@ -65,7 +75,7 @@ func createClient(ip string) *http.Client {
 
 	return &http.Client{
 		// Request timeout
-		Timeout: REQUEST_TIMEOUT,
+		Timeout: time.Second * time.Duration(t.Config.RequestTimeout),
 		Transport: &http.Transport{
 			DialContext: dialer.DialContext,
 		},
@@ -73,7 +83,7 @@ func createClient(ip string) *http.Client {
 }
 
 func (t *Tester) ipIsOk(info *ipInfo) bool {
-	c := createClient(info.Ip)
+	c := t.createClient(info.Ip)
 
 	req, err := http.NewRequestWithContext(context.Background(), "GET", t.Config.Url, nil)
 	if err != nil {
@@ -115,12 +125,14 @@ func (t *Tester) TestIPs() map[string]int {
 			info := ipInfo{ip, 0}
 			if t.ipIsOk(&info) {
 				log.Printf("[OK] %s\n", ip)
+				t.Mu.Lock()
 				okIPs[ip] = info.Bytes / 1024
+				t.Mu.Unlock()
 			} else {
 				log.Printf("[FAIL] %s\n", ip)
 			}
 
-            <-t.LimitCh
+			<-t.LimitCh
 		}(ip)
 	}
 	t.Wg.Wait()
