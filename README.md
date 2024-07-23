@@ -40,3 +40,7 @@ To start testing:
 ```bash
 ./403unlocker-go -c config.json
 ```
+
+
+## Contribution
+If you can improve the source code or make this software better, feel free to send a PR :)
