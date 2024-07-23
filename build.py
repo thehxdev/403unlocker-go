@@ -19,7 +19,7 @@ BIN  = "403unlocker-go"
 GO   = "go"
 
 ARCH = [ "386", "amd64", "arm", "arm64" ]
-OS   = [ "linux", "android", "windows" ]
+OS   = [ "linux", "android", "windows", "darwin" ]
 
 STDOUT = sys.stdout
 STDERR = sys.stderr
@@ -52,6 +52,8 @@ def main() -> None:
     for osName in OS:
         for arch in ARCH:
             if osName == "android" and arch != "arm64":
+                continue
+            if osName == "darwin" and (arch == "386" or arch == "arm"):
                 continue
             build(arch, osName)
             # aio.run_coroutine_threadsafe(build(arch, osName), loop)
