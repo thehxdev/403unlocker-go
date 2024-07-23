@@ -13,7 +13,7 @@ import (
 	"github.com/thehxdev/403unlocker-go/tester"
 )
 
-const VERSION = "1.0.0"
+const VERSION = "1.0.1"
 
 var versionInfo = "403unlocker-go v" + VERSION + "\nhttps://github.com/thehxdev/403unlocker-go"
 
