@@ -39,7 +39,7 @@ def build(arch: str, osname: str) -> None:
         outName += ".exe"
 
     
-    system(f"{envVars} {GO} build -o 'build/{outName}' .")
+    system(f"{envVars} {GO} build -ldflags='-buildid=' -o 'build/{outName}' .")
 
 
 def main() -> None:
