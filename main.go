@@ -4,7 +4,9 @@ import (
 	"encoding/json"
 	"flag"
 	"fmt"
+	"io"
 	"log"
+	"net/http"
 	"os"
 	"time"
 
@@ -18,6 +20,7 @@ var versionInfo = "403unlocker-go v" + VERSION + "\nhttps://github.com/thehxdev/
 func main() {
 	cpath := flag.String("c", "config.json", "path to config file")
 	version := flag.Bool("v", false, "show version info")
+    downloadConfig := flag.Bool("dc", false, "download default config file")
 	flag.IntVar(&tester.Limit, "l", 2, "number of IPs that will be processed concurrently")
 	flag.Parse()
 
@@ -25,6 +28,11 @@ func main() {
 		fmt.Println(versionInfo)
 		os.Exit(0)
 	}
+
+    if *downloadConfig {
+        downloadDefaultConfig()
+        os.Exit(0)
+    }
 
 	t, err := tester.Init(*cpath)
 	if err != nil {
@@ -53,4 +61,26 @@ func writeToFile(ips map[string]int) {
 	}
 
 	fmt.Printf("Wrote test result to `%s` file\n", name)
+}
+
+func downloadDefaultConfig() {
+    url := "https://raw.githubusercontent.com/thehxdev/403unlocker-go/main/config.json"
+    resp, err := http.Get(url)
+    if err != nil {
+        log.Fatal(err)
+    }
+    defer resp.Body.Close()
+
+    body, err := io.ReadAll(resp.Body)
+    if err != nil {
+        log.Fatal(err)
+    }
+
+    fp, err := os.Create("config.json")
+    if err != nil {
+        log.Fatal(err)
+    }
+    defer fp.Close()
+
+    fp.Write(body)
 }
