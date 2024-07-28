@@ -18,7 +18,7 @@ if not sys.version_info >= (3, 8):
 BIN  = "403unlocker-go"
 GO   = "go"
 
-ARCH = [ "386", "amd64", "arm", "arm64" ]
+ARCH = [ "amd64", "arm64" ]
 OS   = [ "linux", "android", "windows", "darwin" ]
 
 STDOUT = sys.stdout
