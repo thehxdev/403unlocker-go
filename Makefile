@@ -2,7 +2,7 @@ BIN := 403unlocker-go
 BUILD_DIR := ./build
 
 $(BIN): $(wildcard *.go) $(wildcard */*.go)
-	CGO_ENABLED=0 go build -ldflags='-d -buildid=' .
+	CGO_ENABLED=0 go build -ldflags='-s -d -buildid=' .
 
 cross-plat:
 	@rm -rf $(BUILD_DIR)
