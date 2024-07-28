@@ -61,21 +61,21 @@ func (t *Tester) readConfigFile(path string) error {
 	return nil
 }
 
-func (t *Tester) createClient(ip string) *http.Client {
+func CreateHttpClient(resolver string, ltimeout, rtimeout int) *http.Client {
 	dialer := &net.Dialer{
 		// Lookup timeout
-		Timeout: time.Second * time.Duration(t.Config.LookupTimeout),
+		Timeout: time.Second * time.Duration(ltimeout),
 		Resolver: &net.Resolver{
 			PreferGo: true,
 			Dial: func(ctx context.Context, network, address string) (net.Conn, error) {
-				return net.Dial(network, net.JoinHostPort(ip, PORT))
+				return net.Dial(network, net.JoinHostPort(resolver, PORT))
 			},
 		},
 	}
 
 	return &http.Client{
 		// Request timeout
-		Timeout: time.Second * time.Duration(t.Config.RequestTimeout),
+		Timeout: time.Second * time.Duration(rtimeout),
 		Transport: &http.Transport{
 			DialContext: dialer.DialContext,
 		},
@@ -83,8 +83,7 @@ func (t *Tester) createClient(ip string) *http.Client {
 }
 
 func (t *Tester) ipIsOk(info *ipInfo) bool {
-	c := t.createClient(info.Ip)
-
+	c := CreateHttpClient(info.Ip, t.Config.LookupTimeout, t.Config.RequestTimeout)
 	req, err := http.NewRequestWithContext(context.Background(), "GET", t.Config.Url, nil)
 	if err != nil {
 		return false

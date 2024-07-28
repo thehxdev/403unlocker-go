@@ -1,4 +1,5 @@
 {
+	"local_resolver": "9.9.9.9",
 	"url": "https://packages.gitlab.com/gitlab/gitlab-ce/packages/el/7/gitlab-ce-16.8.0-ce.0.el7.x86_64.rpm/download.rpm",
     "lookup_timeout": 6,
     "request_timeout": 6,

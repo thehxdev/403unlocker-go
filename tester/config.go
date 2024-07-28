@@ -20,4 +20,5 @@ type config struct {
 	Ips            []string `json:"ips"`
 	LookupTimeout  int      `json:"lookup_timeout"`
 	RequestTimeout int      `json:"request_timeout"`
+	LocalResolver  string   `json:"local_resolver"`
 }

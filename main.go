@@ -1,6 +1,7 @@
 package main
 
 import (
+	"context"
 	"encoding/json"
 	"flag"
 	"fmt"
@@ -13,7 +14,7 @@ import (
 	"github.com/thehxdev/403unlocker-go/tester"
 )
 
-const VERSION = "1.1.0"
+const VERSION = "1.1.1"
 
 var versionInfo = "403unlocker-go v" + VERSION + "\nhttps://github.com/thehxdev/403unlocker-go"
 
@@ -65,7 +66,14 @@ func writeToFile(ips map[string]int) {
 
 func downloadDefaultConfig() {
 	url := "https://raw.githubusercontent.com/thehxdev/403unlocker-go/main/config.json"
-	resp, err := http.Get(url)
+	c := tester.CreateHttpClient("9.9.9.9", 10, 10)
+	req, err := http.NewRequestWithContext(context.Background(), "GET", url, nil)
+
+	if err != nil {
+		log.Fatal(err)
+	}
+
+	resp, err := c.Do(req)
 	if err != nil {
 		log.Fatal(err)
 	}
